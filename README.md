@@ -22,23 +22,21 @@ The workspace uses our npm package `@misterscan/sesi` to provide the local `sesi
 
 ## Setup
 
-From this folder:
+Clone the repository:
 
 ```bash
+git clone https://github.com/Misterscan/my-first-sesi-project.git
+cd my-first-sesi-project
 npm install
 ```
 
 ## Run it
-
-From this folder:
 
 ```bash
 npm run build
 ```
 
 ## Test it
-
-From this folder:
 
 ```bash
 npm test
