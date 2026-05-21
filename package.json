@@ -1,0 +1,15 @@
+{
+  "name": "big-sesi-project",
+  "version": "1.0.0",
+  "description": "A Sesi starter project that fetches raw data, normalizes it into JSON, and compiles the final page from that data.",
+  "license": "ISC",
+  "author": "Misterscan",
+  "type": "commonjs",
+  "scripts": {
+    "test": "sesi tests/run.sesi",
+    "build": "sesi build_site.sesi"
+  },
+  "dependencies": {
+    "@misterscan/sesi": "^1.2.2"
+  }
+}

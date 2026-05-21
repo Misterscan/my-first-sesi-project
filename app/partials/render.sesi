@@ -1,0 +1,260 @@
+export fn RenderCard(card, card_label: string) {
+prompt singleCard {"<article class='story-card'>
+  <p class='story-kicker'>" card_label "</p>
+  <h3>" card["title"] "</h3>
+  <p>" card["body"] "</p>
+</article>
+"}
+return singleCard
+}
+
+export fn RenderCards(cards, card_label: string) {
+let cards_html = ""
+for card in cards {
+cards_html = cards_html + RenderCard(card, card_label)
+}
+return cards_html
+}
+
+export fn StatusLabel(fetch_status: string) {
+if fetch_status == "fallback" {return "Fallback feed"}
+return "Live API"
+}
+
+export fn RenderPage(project, page_voice, cards_html: string, status_label: string, api_url: string, card_count: number, behavior_js: string) {
+prompt html {"<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>" project["brand_name"] "</title>
+  <link rel='preconnect' href='https://fonts.googleapis.com'>
+  <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+  <link href='https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Barlow+Condensed:wght@400;600;700&display=swap' rel='stylesheet'>
+  <style>
+    :root {
+      --paper: #f2eadf;
+      --ink: #142126;
+      --accent: " project["accent"] ";
+      --accent-soft: #f7caa3;
+      --panel: rgba(255, 255, 255, 0.72);
+      --line: rgba(20, 33, 38, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(246, 124, 77, 0.22), transparent 32%),
+        radial-gradient(circle at 85% 18%, rgba(18, 114, 123, 0.18), transparent 28%),
+        linear-gradient(160deg, #f5ead8 0%, #efe4d6 44%, #d8e4e3 100%);
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .masthead {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .hero {
+      padding: 28px;
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, rgba(255,255,255,0.68), rgba(255,255,255,0.36));
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      box-shadow: 0 18px 40px rgba(20, 33, 38, 0.08);
+    }
+    .eyebrow, .status-pill, .story-kicker, .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .eyebrow {
+      color: var(--accent);
+      margin: 0 0 16px;
+    }
+    h1 {
+      margin: 0;
+      max-width: 10ch;
+      font-family: 'Fraunces', serif;
+      font-size: clamp(3.4rem, 8vw, 6.6rem);
+      line-height: 0.92;
+    }
+    .intro {
+      max-width: 34rem;
+      margin: 22px 0 0;
+      font-size: 1.45rem;
+      line-height: 1.2;
+    }
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .meta-card, .status-card, .story-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+    }
+    .meta-card {
+      padding: 14px 16px;
+    }
+    .meta-label {
+      color: rgba(20, 33, 38, 0.58);
+      margin-bottom: 10px;
+    }
+    .meta-value {
+      font-size: 1.2rem;
+    }
+    .status-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+    }
+    .status-pill {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(246, 124, 77, 0.12);
+      color: var(--accent);
+    }
+    .status-copy {
+      font-size: 2rem;
+      line-height: 0.98;
+      margin: 18px 0 0;
+      font-family: 'Fraunces', serif;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin: 34px 0 16px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 0.98;
+    }
+    .section-head p {
+      margin: 0;
+      max-width: 28rem;
+      font-size: 1.1rem;
+    }
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .story-card {
+      padding: 20px;
+      min-height: 240px;
+      transition: transform 180ms ease, border-color 180ms ease, opacity 260ms ease;
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    .story-card.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .story-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(20, 33, 38, 0.26);
+    }
+    .story-kicker {
+      color: var(--accent);
+      margin: 0 0 12px;
+    }
+    .story-card h3 {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+    .story-card p {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.18;
+    }
+    footer {
+      margin-top: 24px;
+      padding: 18px 22px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(20, 33, 38, 0.06);
+      font-size: 1rem;
+    }
+    @media (max-width: 920px) {
+      .masthead, .story-grid, .hero-meta {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        max-width: none;
+      }
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class='shell'>
+    <section class='masthead'>
+      <div class='hero'>
+        <p class='eyebrow'>" project["brand_name"] "</p>
+        <h1>" page_voice["headline"] "</h1>
+        <p class='intro'>" page_voice["intro"] "</p>
+        <div class='hero-meta'>
+          <div class='meta-card'>
+            <div class='meta-label'>Project</div>
+            <div class='meta-value'>" project["project_summary"] "</div>
+          </div>
+          <div class='meta-card'>
+            <div class='meta-label'>Tone</div>
+            <div class='meta-value'>" project["tone"] "</div>
+          </div>
+          <div class='meta-card'>
+            <div class='meta-label'>Cards</div>
+            <div class='meta-value'>" str(card_count) " live entries</div>
+          </div>
+        </div>
+      </div>
+      <aside class='status-card'>
+        <div>
+          <span class='status-pill'>" status_label "</span>
+          <p class='status-copy'>" project["status_headline"] "</p>
+        </div>
+        <div>
+          <p class='meta-label'>Source</p>
+          <p class='meta-value'>" api_url "</p>
+        </div>
+      </aside>
+    </section>
+    <section>
+      <div class='section-head'>
+        <h2>" page_voice["sectionLabel"] "</h2>
+        <p>Fresh data lands in data/feed.json, the normalized build payload lands in data/site_payload.json, and this compiled page lands in out/index.html.</p>
+      </div>
+      <div class='story-grid'>" cards_html "</div>
+    </section>
+    <footer>" page_voice["footerNote"] "</footer>
+  </div>
+  <script>" behavior_js "</script>
+</body>
+</html>
+"}
+return html
+}

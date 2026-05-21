@@ -1,0 +1,119 @@
+// Run tests for the build_site.sesi file
+import {LoadProject, FetchFeed, SelectCards, BuildVoice, BuildPayload} from "app/stages/pipeline"
+
+let failures = 0
+
+print "Testing LoadProject..."
+try {
+let project = LoadProject()
+if type(project) == "object" {
+print "LoadProject returned an object"
+}
+if type(project) != "object" {
+print "FAIL: LoadProject should return an object"
+failures = failures + 1
+}
+
+print "Testing FetchFeed..."
+let fetch_result = FetchFeed(project["api_url"], project["header"])
+if type(fetch_result) == "object" {
+print "FetchFeed returned an object"
+}
+if type(fetch_result) != "object" {
+print "FAIL: FetchFeed should return an object"
+failures = failures + 1
+}
+if type(fetch_result["raw_feed"]) == "null" {
+print "FAIL: FetchFeed result should have raw_feed"
+failures = failures + 1
+}
+if type(fetch_result["feed"]) == "null" {
+print "FAIL: FetchFeed result should have feed"
+failures = failures + 1
+}
+if type(fetch_result["fetch_status"]) == "null" {
+print "FAIL: FetchFeed result should have fetch_status"
+failures = failures + 1
+}
+
+print "Testing SelectCards..."
+let selection = SelectCards(fetch_result["feed"], 6)
+if type(selection) == "object" {
+print "SelectCards returned an object"
+}
+if type(selection) != "object" {
+print "FAIL: SelectCards should return an object"
+failures = failures + 1
+}
+if type(selection["cards"]) == "null" {
+print "FAIL: SelectCards result should have cards"
+failures = failures + 1
+}
+if type(selection["titles"]) == "null" {
+print "FAIL: SelectCards result should have titles"
+failures = failures + 1
+}
+
+print "Testing BuildVoice..."
+let page_voice = BuildVoice(project, selection["titles"])
+if type(page_voice) == "object" {
+print "BuildVoice returned an object"
+}
+if type(page_voice) != "object" {
+print "FAIL: BuildVoice should return an object"
+failures = failures + 1
+}
+if type(page_voice["headline"]) == "null" {
+print "FAIL: BuildVoice result should have headline"
+failures = failures + 1
+}
+if type(page_voice["intro"]) == "null" {
+print "FAIL: BuildVoice result should have intro"
+failures = failures + 1
+}
+if type(page_voice["sectionLabel"]) == "null" {
+print "FAIL: BuildVoice result should have sectionLabel"
+failures = failures + 1
+}
+if type(page_voice["footerNote"]) == "null" {
+print "FAIL: BuildVoice result should have footerNote"
+failures = failures + 1
+}
+
+print "Testing BuildPayload..."
+let payload = BuildPayload(project, page_voice, selection["cards"], fetch_result["fetch_status"])
+if type(payload) == "object" {
+print "BuildPayload returned an object"
+}
+if type(payload) != "object" {
+print "FAIL: BuildPayload should return an object"
+failures = failures + 1
+}
+if type(payload["project"]) == "null" {
+print "FAIL: BuildPayload result should have project"
+failures = failures + 1
+}
+if type(payload["page_voice"]) == "null" {
+print "FAIL: BuildPayload result should have page_voice"
+failures = failures + 1
+}
+if type(payload["cards"]) == "null" {
+print "FAIL: BuildPayload result should have cards"
+failures = failures + 1
+}
+if type(payload["fetch_status"]) == "null" {
+print "FAIL: BuildPayload result should have fetch_status"
+failures = failures + 1
+}
+}
+catch (error) {
+print "Test failed: " error
+failures = failures + 1
+}
+
+if failures == 0 {
+print "All tests passed!"
+}
+if failures != 0 {
+print "Tests failed: " failures
+}

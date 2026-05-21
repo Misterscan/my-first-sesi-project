@@ -1,0 +1,20 @@
+import {LoadProject, FetchFeed, SelectCards, BuildVoice, BuildPayload} from "app/stages/pipeline"
+import {RenderCards, RenderPage, StatusLabel} from "app/partials/render"
+make_dir("app")
+make_dir("app/prompts")
+make_dir("app/scripts")
+make_dir("data")
+make_dir("out")
+print "Loading starter brief..."
+let project = LoadProject()
+let fetch_result = FetchFeed(project["api_url"], project["header"])
+let selection = SelectCards(fetch_result["feed"], 6)
+let page_voice = BuildVoice(project, selection["titles"])
+let payload = BuildPayload(project, page_voice, selection["cards"], fetch_result["fetch_status"])
+write_file("data/site_payload.json", to_json(payload))
+let behavior_js = read_file("app/scripts/site.js")
+let cards_html = RenderCards(selection["cards"], project["card_label"])
+let status_label = StatusLabel(fetch_result["fetch_status"])
+let html = RenderPage(project, page_voice, cards_html, status_label, project["api_url"], len(selection["cards"]), behavior_js)
+write_file("out/index.html", html)
+print "Built out/index.html"

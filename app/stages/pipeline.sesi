@@ -1,0 +1,66 @@
+export fn LoadProject() {
+let project = from_json(read_file("data/client_profile.json"))
+if type(project["accent"]) == "null" {project["accent"] = "#f67c4d"}
+if type(project["card_label"]) == "null" {project["card_label"] = "Fresh item"}
+if type(project["header"]) == "null" {project["header"] = ""}
+return project
+}
+
+export fn FetchFeed(api_url: string, header: string) {
+let raw_feed = "[]"
+let feed = []
+let fetch_status = "live"
+try {
+raw_feed = web_get(api_url, header)
+feed = from_json(raw_feed)
+}
+catch (e) {
+print "Live API fetch failed. Using fallback feed."
+fetch_status = "fallback"
+raw_feed = read_file("data/fallback_feed.json")
+feed = from_json(raw_feed)
+}
+write_file("data/feed.json", to_json(feed))
+return {"raw_feed": raw_feed, "feed": feed, "fetch_status": fetch_status}
+}
+
+export fn SelectCards(feed, limit: number) {
+let cards = []
+let titles = []
+let item_count = 0
+for item in feed {
+if item_count < limit {
+let title = item["title"]
+let body = item["body"]
+if type(title) == "null" {title = item["name"]}
+if type(title) == "null" {title = item["headline"]}
+if type(title) == "null" {title = item["setup"]}
+if type(title) == "null" {title = item["question"]}
+if type(body) == "null" {body = item["summary"]}
+if type(body) == "null" {body = item["description"]}
+if type(body) == "null" {body = item["punchline"]}
+if type(body) == "null" {body = item["answer"]}
+if type(body) == "null" {body = item["content"]}
+let card = {"title": title, "body": body}
+push(cards, card)
+push(titles, title)
+item_count = item_count + 1
+}}
+return {"cards": cards, "titles": titles}
+}
+
+export fn BuildVoice(project, titles) {
+let prompt_text = read_file("app/prompts/site_voice.txt")
+let page_voice = {"headline": "Open House Dispatch", "intro": "A scalable big-project starter that turns live API entries into a polished launch surface.", "sectionLabel": "Latest Pull", "footerNote": "Swap the endpoint, expand the data model, and rebuild as the project grows toward production."}
+try {
+page_voice = structured_output({headline: string, intro: string, sectionLabel: string, footerNote: string})(model("gemini-3.1-flash-lite") {temperature: 0.4, cache: false} {prompt_text " Brand: " project["brand_name"] " Project summary: " project["project_summary"] " Tone: " project["tone"] " API titles: " join(titles, " | ")})
+}
+catch (e) {
+print "AI copy step failed. Using fallback copy."
+}
+return page_voice
+}
+
+export fn BuildPayload(project, page_voice, cards, fetch_status: string) {
+return {"project": project, "page_voice": page_voice, "cards": cards, "fetch_status": fetch_status}
+}

@@ -1,0 +1,10 @@
+{
+  "brand_name": "Northline Studio",
+  "project_summary": "API-backed starter for a larger multi-phase project",
+  "tone": "confident, editorial, fast-moving",
+  "accent": "#f67c4d",
+  "card_label": "Fresh item",
+  "status_headline": "A reusable Sesi builder that turns live endpoint data into a presentation-ready page.",
+  "api_url": "https://jsonplaceholder.typicode.com/posts",
+  "header": "\n'Content-Type': 'application/json'"
+}

@@ -1,0 +1,4 @@
+Turn this client brief and API snapshot into concise homepage copy for a larger project starter.
+Return JSON with headline, intro, sectionLabel, and footerNote.
+Keep the language direct, polished, and launch-ready.
+Avoid filler and avoid generic startup phrasing.
