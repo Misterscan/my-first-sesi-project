@@ -1,28 +1,24 @@
-export fn RenderCard(card, card_label: string) {
-prompt singleCard {"<article class='story-card'>
+export fn RenderCard(card, card_label: string) 
+{prompt singleCard {"<article class='story-card'>
   <p class='story-kicker'>" card_label "</p>
   <h3>" card["title"] "</h3>
   <p>" card["body"] "</p>
 </article>
 "}
-return singleCard
-}
+return singleCard}
 
-export fn RenderCards(cards, card_label: string) {
-let cards_html = ""
+export fn RenderCards(cards, card_label: string) 
+{let cards_html = ""
 for card in cards {
-cards_html = cards_html + RenderCard(card, card_label)
-}
-return cards_html
-}
+cards_html = cards_html + RenderCard(card, card_label)}
+return cards_html}
 
-export fn StatusLabel(fetch_status: string) {
-if fetch_status == "fallback" {return "Fallback feed"}
-return "Live API"
-}
+export fn StatusLabel(fetch_status: string) 
+{if fetch_status == "fallback" {return "Fallback feed"}
+return "Live API"}
 
-export fn RenderPage(project, page_voice, cards_html: string, status_label: string, api_url: string, card_count: number, behavior_js: string) {
-prompt html {"<!DOCTYPE html>
+export fn RenderPage(project, page_voice, cards_html: string, status_label: string, api_url: string, card_count: number, behavior_js: string) 
+{prompt html {"<!DOCTYPE html>
 <html lang='en'>
 <head>
   <meta charset='UTF-8'>
@@ -256,5 +252,4 @@ prompt html {"<!DOCTYPE html>
 </body>
 </html>
 "}
-return html
-}
+return html}
